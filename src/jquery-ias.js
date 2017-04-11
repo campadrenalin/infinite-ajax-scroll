@@ -26,6 +26,7 @@
     this.$container = (window === $element.get(0) ? $(document) : $element);
     this.defaultDelay = options.delay;
     this.negativeMargin = options.negativeMargin;
+    this.preloadMargin  = options.preloadMargin;
     this.nextUrl = null;
     this.isBound = false;
     this.isPaused = false;
@@ -67,6 +68,9 @@
 
       this.fire('scroll', [currentScrollOffset, scrollThreshold]);
 
+      if (currentScrollOffset >= scrollThreshold - this.preloadMargin) {
+        this.preloadNext();
+      }
       if (currentScrollOffset >= scrollThreshold) {
         this.next();
       }
@@ -164,6 +168,21 @@
       return $(this.nextSelector, container).last().attr('href');
     };
 
+    this.preload = function(url) {
+      return this.preloads[url] || this._preload(url);
+    };
+    this._preload = function(url) {
+      var loadEvent = {
+        url: url,
+        dataType: 'html'
+      };
+      self.fire('load', [loadEvent]); // Allow customization in handler
+
+      var xhr = $.ajax(loadEvent);
+      this.preloads[url] = xhr;
+      return xhr;
+    };
+
     /**
      * Loads a page url
      *
@@ -180,13 +199,6 @@
           timeDiff;
 
       delay = delay || this.defaultDelay;
-
-      var loadEvent = {
-        url: url,
-        dataType: 'html'
-      };
-
-      self.fire('load', [loadEvent]);
 
       function xhrDoneCallback(data) {
         $itemContainer = $(this.itemsContainerSelector, data).eq(0);
@@ -213,7 +225,7 @@
           }
         }
       }
-      this.jsXhr = $.ajax(loadEvent)
+      this.jsXhr = self.preload(url)
         .done($.proxy(xhrDoneCallback, self));
 
       return this.jsXhr;
@@ -532,6 +544,15 @@
     return this;
   };
 
+  IAS.prototype.preloadNext = function() {
+    var url = this.nextUrl,
+        self = this;
+
+    if (url) {
+      self.preload(url);
+    }
+  };
+
   /**
    * Load the next page
    *
@@ -659,6 +680,7 @@
     next: '.next',
     pagination: false,
     delay: 600,
-    negativeMargin: 10
+    negativeMargin: 10,
+    preloadMargin: 10
   };
 })(jQuery);
