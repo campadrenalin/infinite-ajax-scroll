@@ -636,7 +636,7 @@
    * @param option
    * @returns {*} the last IAS instance will be returned
    */
-  $.fn.ias = function(option) {
+  $.fn.ias = function(option, init_callback) {
     var args = Array.prototype.slice.call(arguments);
     var retval = this;
 
@@ -649,6 +649,9 @@
       // set a new instance as data
       if (!instance) {
         $this.data('ias', (instance = new IAS($this, options)));
+	if (init_callback) {
+	  init_callback(instance);
+	}
 
         $(document).ready($.proxy(instance.initialize, instance));
       }
