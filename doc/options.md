@@ -66,6 +66,18 @@ Minimal number of milliseconds to stay in a loading state.
 
 To improve user experience, website visitors should be aware when fresh results are appended to the current list. Infinite AJAX Scroll displays a spinner/loader (only when the spinner extension is used). When the loading of the next page only takes a few miliseconds the spinner isn't displayed long enough to be noticed by the visitor. With the delay option you can extend the time at which to spinner is shown, before new items are appended.
 
+### preloadMargin
+
+<dl>
+    <dt>Type</dt>
+    <dd>integer</dd>
+
+    <dt>Default</dt>
+    <dd>10</dd>
+</dl>
+
+Loads the HTML of the next page in advance. For example, if this is set to 60, then the HTML will be loaded when you are within 60px of the bottom of the page. Has no effect if this value is less than negativeMargin. Because all loads go through the preload cache, we only load this HTML once, regardless of which mechanism triggers first.
+
 ### negativeMargin
 
 <dl>
