@@ -545,13 +545,13 @@
     return this;
   };
 
+  /**
+   * Preload the next page, but don't render it yet.
+   *
+   * @public
+   */
   IAS.prototype.preloadNext = function() {
-    var url = this.nextUrl,
-        self = this;
-
-    if (url) {
-      self.preload(url);
-    }
+    if (this.nextUrl) this.preload(this.nextUrl);
   };
 
   /**
