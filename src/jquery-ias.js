@@ -43,6 +43,7 @@
       ready:    new IASCallbacks($)
     };
     this.extensions = [];
+    this.preloads = {};
 
     /**
      * Scroll event handler
@@ -168,15 +169,21 @@
       return $(this.nextSelector, container).last().attr('href');
     };
 
+    /**
+     * Does the actual loading of page HTML. Can be done in advance with preloadMargin option.
+     *
+     * @param url
+     * @returns {object}        jsXhr object
+     */
     this.preload = function(url) {
-      return this.preloads[url] || this._preload(url);
-    };
-    this._preload = function(url) {
+      if (this.preloads[url])
+        return this.preloads[url];
+
       var loadEvent = {
         url: url,
         dataType: 'html'
       };
-      self.fire('load', [loadEvent]); // Allow customization in handler
+      this.fire('load', [loadEvent]); // Allow customization in handler
 
       var xhr = $.ajax(loadEvent);
       this.preloads[url] = xhr;
@@ -195,10 +202,7 @@
       var self = this,
           $itemContainer,
           items = [],
-          timeStart = +new Date(),
-          timeDiff;
-
-      delay = delay || this.defaultDelay;
+          delayDef = $.Deferred();
 
       function xhrDoneCallback(data) {
         $itemContainer = $(this.itemsContainerSelector, data).eq(0);
@@ -213,20 +217,17 @@
         }
 
         self.fire('loaded', [data, items]);
-
-        if (callback) {
-          timeDiff = +new Date() - timeStart;
-          if (timeDiff < delay) {
-            setTimeout(function() {
-              callback.call(self, data, items);
-            }, delay - timeDiff);
-          } else {
-            callback.call(self, data, items);
-          }
-        }
       }
       this.jsXhr = self.preload(url)
         .done($.proxy(xhrDoneCallback, self));
+
+      setTimeout(
+          function(){ delayDef.resolve(); },
+          delay || this.defaultDelay
+      );
+      $.when(this.jsXhr, delayDef).done(function(data) {
+        callback.call(self, data[0], items);
+      });
 
       return this.jsXhr;
     };
